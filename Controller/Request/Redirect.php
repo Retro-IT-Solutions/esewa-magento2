@@ -62,7 +62,6 @@ class Redirect implements HttpGetActionInterface
                 <input type='hidden' id='failure_url' name='failure_url' value='{$this->urlBuilder->getUrl('esewa/response/response')}' />
                 <input type='hidden' id='signed_field_names' name='signed_field_names' value='total_amount,transaction_uuid,product_code' />
                 <input type='hidden' id='signature' name='signature' value='{$signature}' />
-                <input type='submit' value='submit' />
                 <script type='text/javascript'>document.getElementById('esewa_payment_form').submit();</script>";
         die;
     }
