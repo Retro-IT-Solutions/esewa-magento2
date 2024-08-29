@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/crontab.xsd">
+    <group id="default">
+        <job name="esewa_payment_status_check" instance="Retroitsoln\Esewa\Cron\StatusCheck" method="execute">
+            <!-- No schedual tag here. scheduling it programmatically -->
+        </job>
+    </group>
+</config>

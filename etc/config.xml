@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <esewa>
+                <active>1</active>
+                <model>Retroitsoln\Esewa\Model\Esewa</model>
+                <title><![CDATA[eSewa]]></title>
+                <esewa_test_merchant_secret><![CDATA[8gBm/:&EnhH.1/q]]></esewa_test_merchant_secret>
+                <esewa_test_product_code><![CDATA[EPAYTEST]]></esewa_test_product_code>
+                <instructions><![CDATA[You will be redirected to eSewa Website]]></instructions>
+                <order_status>pending_payment</order_status>
+                <sort_order>1</sort_order>
+                <allowspecific>0</allowspecific>
+            </esewa>
+        </payment>
+    </default>
+</config>
