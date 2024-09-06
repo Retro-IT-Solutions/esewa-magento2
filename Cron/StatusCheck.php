@@ -13,7 +13,6 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface as TransactionBuilder;
 use Magento\Sales\Api\TransactionRepositoryInterface;
-use Magento\Cron\Model\Schedule;
 
 class StatusCheck
 {
@@ -50,25 +49,42 @@ class StatusCheck
         $this->transactionRepository = $transactionRepository;
     }
 
-    public function execute(Schedule $schedule)
+    public function execute()
     {
-        $dt = date('Y-m-d h:i:sa');
-        $params = json_decode($schedule->getMessages(), true);
-        $orderId = $params['order_id'] ?? null;
-        $transactionUuid = $params['transaction_uuid'] ?? null;
-        $order = $this->orderRepository->get($orderId);
-        $totalAmount = strval($order->getGrandTotal());
+        $connection = $this->resource->getConnection();
+        $tableName = $this->resource->getTableName('esewa_cron_status_check');
 
-        if ($orderId === null or $transactionUuid === null) {
-            return;
-        }
+        $pendingData = $connection->select()
+            ->from($tableName)
+            ->where('executed = ?', 0)
+            ->where('created_at <= ?', date('Y-m-d H:i:s', strtotime('-6 minutes')));
+        
+        $records = $connection->fetchAll($pendingData);
 
-        $responseData = $this->getEsewaResponse($totalAmount, $transactionUuid);
+        foreach ($records as $record) {
+            $dt = date('Y-m-d h:i:sa');
+            $orderId = $record['order_id'];
+            $transactionUuid = $record['transaction_uuid'];
+            $order = $this->orderRepository->get($orderId);
+            $totalAmount = strval($order->getGrandTotal());
 
-        if ($responseData['status'] === 'COMPLETE') {
-            $this->updateOrderStatus($order);
-            $this->createTransaction($order, $responseData);
-            $this->createAndSendInvoice($order);
+            if ($orderId === null or $transactionUuid === null) {
+                return;
+            }
+
+            $responseData = $this->getEsewaResponse($totalAmount, $transactionUuid);
+
+            if ($responseData['status'] === 'COMPLETE') {
+                $this->updateOrderStatus($order);
+                $this->createTransaction($order, $responseData);
+                $this->createAndSendInvoice($order);
+            }
+
+            $connection->update(
+                $tableName,
+                ['executed' => 1],
+                ['order_id = ?' => $orderId, 'transaction_uuid = ?' => $transactionUuid]
+            );
         }
     }
 

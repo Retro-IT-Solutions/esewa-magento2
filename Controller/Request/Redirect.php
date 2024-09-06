@@ -3,7 +3,6 @@
 namespace Retroitsoln\Esewa\Controller\Request;
 
 use Retroitsoln\Esewa\Helper\Data as EsewaHelper;
-use Retroitsoln\Esewa\Model\EsewaCron;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\Context;
 use Magento\Checkout\Model\Session as CheckoutSession;
@@ -14,24 +13,24 @@ class Redirect implements HttpGetActionInterface
     protected $checkoutSession;
     protected $urlBuilder;
     private $esewaHelper;
-    protected $esewaCron;
     protected $resource;
 
     public function __construct(
         Context $context,
         CheckoutSession $checkoutSession,
         EsewaHelper $esewaHelper,
-        ResourceConnection $resource,
-        EsewaCron $esewaCron
+        ResourceConnection $resource
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->urlBuilder = $context->getUrl();
         $this->esewaHelper = $esewaHelper;
         $this->resource = $resource;
-        $this->esewaCron = $esewaCron;
     }
     public function execute()
     {
+        $connection = $this->resource->getConnection();
+        $tableName = $this->resource->getTableName('esewa_cron_status_check');
+
         $gatewayUrl = $this->esewaHelper->getEsewaUrl();
         $merchantSecret = $this->esewaHelper->getMerchantSecret();
         $productCode = $this->esewaHelper->getProductCode();
@@ -47,7 +46,12 @@ class Redirect implements HttpGetActionInterface
         $totalAmount = strval($order->getGrandTotal());
         $signature = $this->generateSignature($totalAmount, $transaction_uuid, $productCode, $merchantSecret);
 
-        $this->esewaCron->scheduleJob($orderId, $transaction_uuid);
+        $connection->insert($tableName, [
+            'order_id' => $orderId,
+            'transaction_uuid' => $transaction_uuid,
+            'created_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+            'executed' => 0
+        ]);
 
 
         echo "<form action='{$gatewayUrl}' method='post' id='esewa_payment_form'>

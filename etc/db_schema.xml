@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="esewa_cron_status_check" resource="default" engine="innodb" comment="eSewa Pending Payments">
+        <column xsi:type="int" name="entity_id" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="order_id" nullable="false" comment="Order ID"/>
+        <column xsi:type="varchar" name="transaction_uuid" nullable="false" length="255" comment="Transaction UUID"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="smallint" name="executed" nullable="false" default="0" comment="Executed"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+    </table>
+</schema>
